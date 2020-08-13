@@ -277,12 +277,7 @@ impl<T: Trait<I>, I: Instance> UniqueAssets<IdentifiedAsset<AssetId<T>, <T as Tr
 
         Total::<I>::mutate(|total| *total += 1);
         TotalForAccount::<T, I>::mutate(owner_account, |total| *total += 1);
-        AssetsForAccount::<T, I>::mutate(owner_account, |assets| {
-            match assets.binary_search(&new_asset) {
-                Ok(_pos) => {} // should never happen
-                Err(pos) => assets.insert(pos, new_asset),
-            }
-        });
+        AssetsForAccount::<T, I>::append(owner_account, &new_asset);
         AccountForAsset::<T, I>::insert(asset_id, &owner_account);
 
         Ok(asset_id)
@@ -304,9 +299,7 @@ impl<T: Trait<I>, I: Instance> UniqueAssets<IdentifiedAsset<AssetId<T>, <T as Tr
         Burned::<I>::mutate(|total| *total += 1);
         TotalForAccount::<T, I>::mutate(&owner, |total| *total -= 1);
         AssetsForAccount::<T, I>::mutate(owner, |assets| {
-            let pos = assets
-                .binary_search(&burn_asset)
-                .expect("We already checked that we have the correct owner; qed");
+            let pos = assets.iter().position(|x| *x == burn_asset).unwrap();
             assets.remove(pos);
         });
         AccountForAsset::<T, I>::remove(&asset_id);
@@ -334,9 +327,7 @@ impl<T: Trait<I>, I: Instance> UniqueAssets<IdentifiedAsset<AssetId<T>, <T as Tr
         TotalForAccount::<T, I>::mutate(&owner, |total| *total -= 1);
         TotalForAccount::<T, I>::mutate(dest_account, |total| *total += 1);
         let asset = AssetsForAccount::<T, I>::mutate(owner, |assets| {
-            let pos = assets
-                .binary_search(&xfer_asset)
-                .expect("We already checked that we have the correct owner; qed");
+            let pos = assets.iter().position(|x| *x == xfer_asset).unwrap();
             assets.remove(pos)
         });
         AssetsForAccount::<T, I>::mutate(dest_account, |assets| {
