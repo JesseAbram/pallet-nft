@@ -54,7 +54,7 @@ impl system::Trait for Test {
 }
 parameter_types! {
     pub const MaxAssets: u128 = 5;
-    pub const MaxAssetsPerUser: u64 = 2;
+    pub const MaxAssetsPerUser: u64 = 3;
 }
 impl Trait for Test {
     type Event = ();

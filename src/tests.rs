@@ -67,9 +67,10 @@ fn mint_err_max_user() {
     new_test_ext().execute_with(|| {
         assert_ok!(SUT::mint(Origin::root(), 1, vec![]));
         assert_ok!(SUT::mint(Origin::root(), 1, vec![0]));
+        assert_ok!(SUT::mint(Origin::root(), 1, vec![1]));
 
         assert_err!(
-            SUT::mint(Origin::root(), 1, vec![1]),
+            SUT::mint(Origin::root(), 1, vec![2]),
             Error::<Test, DefaultInstance>::TooManyAssetsForAccount
         );
     });
@@ -197,6 +198,7 @@ fn transfer_err_max_user() {
     new_test_ext().execute_with(|| {
         assert_ok!(SUT::mint(Origin::root(), 1, vec![0]));
         assert_ok!(SUT::mint(Origin::root(), 1, vec![1]));
+        assert_ok!(SUT::mint(Origin::root(), 1, vec![2]));
         assert_ok!(SUT::mint(Origin::root(), 2, Vec::<u8>::default()));
         assert_eq!(
             SUT::account_for_asset::<H256>(Vec::<u8>::default().blake2_256().into()),
@@ -213,3 +215,23 @@ fn transfer_err_max_user() {
         );
     });
 }
+
+    #[test]
+    fn test_binary_search_fail() {
+        new_test_ext().execute_with(|| {
+            let vec = vec![1, 2, 3];
+            let vec2 = vec![1, 2];
+                
+            assert_ok!(SUT::mint(Origin::root(), 1, Vec::<u8>::default()));
+            assert_ok!(SUT::mint(Origin::root(), 1, vec));
+            assert_ok!(SUT::mint(Origin::root(), 1, vec2.clone()));
+    
+            assert_ok!(SUT::burn(
+                Origin::signed(1),
+                vec2.blake2_256().into()
+            ));
+    
+        });
+    }
+
+
