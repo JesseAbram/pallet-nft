@@ -326,18 +326,12 @@ impl<T: Trait<I>, I: Instance> UniqueAssets<IdentifiedAsset<AssetId<T>, <T as Tr
 
         TotalForAccount::<T, I>::mutate(&owner, |total| *total -= 1);
         TotalForAccount::<T, I>::mutate(dest_account, |total| *total += 1);
-        let asset = AssetsForAccount::<T, I>::mutate(owner, |assets| {
+        AssetsForAccount::<T, I>::mutate(owner, |assets| {
             let pos = assets.iter().position(|x| *x == xfer_asset).unwrap();
             assets.remove(pos)
         });
-        AssetsForAccount::<T, I>::mutate(dest_account, |assets| {
-            match assets.binary_search(&asset) {
-                Ok(_pos) => {} // should never happen
-                Err(pos) => assets.insert(pos, asset),
-            }
-        });
+        AssetsForAccount::<T, I>::append(dest_account, xfer_asset);
         AccountForAsset::<T, I>::insert(&asset_id, &dest_account);
-
         Ok(())
     }
 }
