@@ -298,9 +298,10 @@ impl<T: Trait<I>, I: Instance> UniqueAssets<IdentifiedAsset<AssetId<T>, <T as Tr
         Total::<I>::mutate(|total| *total -= 1);
         Burned::<I>::mutate(|total| *total += 1);
         TotalForAccount::<T, I>::mutate(&owner, |total| *total -= 1);
-        AssetsForAccount::<T, I>::mutate(owner, |assets| {
-            let pos = assets.iter().position(|x| *x == burn_asset).unwrap();
+        let _result: Result<(), Error::<T, I>> = AssetsForAccount::<T, I>::mutate(owner, |assets| {
+            let pos = assets.iter().position(|x| *x == burn_asset).ok_or(Error::<T, I>::NonexistentAsset)?;
             assets.remove(pos);
+            Ok(())
         });
         AccountForAsset::<T, I>::remove(&asset_id);
 
@@ -326,9 +327,10 @@ impl<T: Trait<I>, I: Instance> UniqueAssets<IdentifiedAsset<AssetId<T>, <T as Tr
 
         TotalForAccount::<T, I>::mutate(&owner, |total| *total -= 1);
         TotalForAccount::<T, I>::mutate(dest_account, |total| *total += 1);
-        AssetsForAccount::<T, I>::mutate(owner, |assets| {
-            let pos = assets.iter().position(|x| *x == xfer_asset).unwrap();
-            assets.remove(pos)
+        let _result: Result<(), Error::<T, I>> = AssetsForAccount::<T, I>::mutate(owner, |assets| {
+            let pos = assets.iter().position(|x| *x == xfer_asset).ok_or(Error::<T, I>::NonexistentAsset)?;
+            assets.remove(pos);
+            Ok(())
         });
         AssetsForAccount::<T, I>::append(dest_account, xfer_asset);
         AccountForAsset::<T, I>::insert(&asset_id, &dest_account);
